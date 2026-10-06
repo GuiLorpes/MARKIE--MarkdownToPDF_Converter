@@ -1,41 +1,45 @@
-from enum import Enum, auto
-
 exceptions: list[str] = [
-"Usage: python md_to_pdf.py --file FILE",
+"Usage: python md_to_pdf.py --file FILE  --style STYLE --theme -o OUT.pdf",
 "FILE has a different extension. FILE has to be .md",
 "FILE was not found",
 "FILE doesn't have contents to convert to PDF"
 ]
 
-class ExceptionType(Enum):
-    '''
-    Determines the type of exception that is happening
-    '''
-    NOARG = auto()
-    NOMD = auto()
-    DOESNTEXIST = auto()
-    ISEMPTY = auto()
 
-class Exceptions:
+class MdToPdfExceptions(Exception):
+    ''' 
+    Base class for all exceptions raised by this project
+    Subclasses define a default message, which can be overridden
+    to add details (e.g. the file name).
     '''
-    Gives an exeption message in case an error occurs
-     - --file is empty
-     - *file* doesn't end in .md
-     - *file* doesn't exists
-     - --file is not empty & *file* exists and ends in .md, but its empty
-    '''
-    exception: str
-    
-    def __init__(self, type: ExceptionType):
-        match type:
-            case ExceptionType.NOARG:
-                self.exception = exceptions[0]
-            case ExceptionType.NOMD:
-                self.exception = exceptions[1]
-            case ExceptionType.DOESNTEXIST:
-                self.exception = exceptions[2]
-            case ExceptionType.ISEMPTY:
-                self.exception = exceptions[3]
+    default_message = "Unexpected error"
 
-    def get_exception(self) -> str:
-        return self.exception 
+    def __init__(self, message: str | None = None):
+        super().__init__(message or self.default_message)
+
+
+class NoFileError(MdToPdfExceptions):
+    '''Raised when no file is passed as argument'''
+    default_message = (
+        "Usage: python md_to_pdf.py --file FILE --style STYLE --theme -o OUT.pdf"
+    )
+
+
+class NotMarkdownError(MdToPdfExceptions):
+    '''Raised when FILE doesn't have the .md extension'''
+    default_message = "FILE has a different extension. FILE has to be .md"
+
+
+class InputNotFoundError(MdToPdfExceptions):
+    '''Raised when FILE doesn't exist'''
+    default_message = "FILE was not found"
+
+
+class EmptyFileError(MdToPdfExceptions):
+    '''Raised when FILE exists but has nothing to convert'''
+    default_message = "FILE doesn't have contents to convert to PDF"
+
+
+class StyleError(MdToPdfExceptions):
+    '''Raised when the chosen style (or its .css file) can't be used'''
+    default_message = "Invalid style"
