@@ -1,0 +1,14 @@
+/* Fundo da página inteira (inclusive as margens) */
+@page {
+  background: #0d1117;
+}
+
+:root {
+  --cor-texto: #e6edf3;
+  --cor-destaque: #58a6ff;
+  --cor-fundo-codigo: #161b22;
+  --cor-borda: #30363d;
+  --cor-fundo-suave: #161b22;
+  --cor-texto-suave: #8b949e;
+  --cor-texto-th: #0d1117;   /* texto escuro sobre o cabeçalho azul-claro */
+}

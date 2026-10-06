@@ -1,0 +1,194 @@
+/* artigo-sbc.css: inspirado no template da SBC */
+
+@page {
+  size: A4;
+  margin: 3.5cm 3cm 2.5cm 3cm;
+
+  /* O template da SBC não numera as páginas.
+     Descomente se quiser numeração:
+  @bottom-center {
+    content: counter(page);
+    font-size: 10pt;
+  }
+  */
+}
+
+:root {
+  --cor-texto: #000;
+  --cor-destaque: #000;
+  --cor-fundo-codigo: #f5f5f5;
+  --cor-borda: #999;
+  --cor-fundo-suave: #f5f5f5;
+  --cor-texto-suave: #444;
+  --cor-texto-th: #000;
+}
+
+body {
+  font-family: "Times New Roman", "Liberation Serif", Times, serif;
+  font-size: 12pt;
+  line-height: 1.25;
+  color: var(--cor-texto);
+  counter-reset: secao;          /* contador das seções numeradas */
+}
+
+/* --- Texto --- */
+p {
+  margin: 0 0 0.6em 0;
+  text-align: justify;
+  text-indent: 1.27cm;
+  hyphens: auto;                 /* precisa de lang="pt-BR" no <html> */
+}
+h2 + p, h3 + p, h4 + p,
+li p, blockquote p, td p {
+  text-indent: 0;                /* sem recuo logo após títulos */
+}
+
+/* --- Cabeçalho do artigo --- */
+h1 {
+  font-size: 16pt;
+  font-weight: bold;
+  text-align: center;
+  margin: 0 0 0.8em 0;
+  border: none;
+}
+.autores {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 0.3em;
+}
+.afiliacao {
+  text-align: center;
+  font-size: 10pt;
+  font-style: italic;
+  margin-bottom: 1.5em;
+}
+.resumo {
+  margin: 1.5em 0.8cm;
+  font-style: italic;
+  text-align: justify;
+}
+
+/* --- Seções numeradas automaticamente: 1. / 1.1. --- */
+h2, h3, h4 {
+  font-weight: bold;
+  line-height: 1.2;
+  page-break-after: avoid;
+}
+h2 {
+  font-size: 13pt;
+  margin: 1.4em 0 0.5em 0;
+  counter-increment: secao;
+  counter-reset: subsecao;
+}
+h2::before {
+  content: counter(secao) ". ";
+}
+h3 {
+  font-size: 12pt;
+  margin: 1.1em 0 0.4em 0;
+  counter-increment: subsecao;
+}
+h3::before {
+  content: counter(secao) "." counter(subsecao) ". ";
+}
+h4 {
+  font-size: 12pt;
+  font-style: italic;
+  margin: 1em 0 0.3em 0;
+}
+
+/* Seção sem número (ex.: Referências): <h2 class="sem-numero"> */
+h2.sem-numero {
+  counter-increment: none;
+}
+h2.sem-numero::before {
+  content: none;
+}
+
+/* --- Links --- */
+a {
+  color: var(--cor-destaque);
+  text-decoration: none;
+}
+
+/* --- Listas --- */
+ul, ol {
+  margin: 0 0 0.6em 0;
+  padding-left: 1.27cm;
+}
+li {
+  margin-bottom: 0.2em;
+}
+
+/* --- Citações --- */
+blockquote {
+  margin: 0.8em 1cm;
+  padding: 0;
+  font-size: 11pt;
+  color: var(--cor-texto-suave);
+}
+
+/* --- Código --- */
+code {
+  font-family: "Courier New", "DejaVu Sans Mono", monospace;
+  font-size: 10pt;
+  background: var(--cor-fundo-codigo);
+  padding: 0.05em 0.25em;
+}
+pre {
+  background: var(--cor-fundo-codigo);
+  border: 1px solid var(--cor-borda);
+  padding: 0.5em 0.7em;
+  margin: 0.8em 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  page-break-inside: avoid;
+}
+pre code {
+  background: none;
+  padding: 0;
+  font-size: 9.5pt;
+}
+
+/* --- Tabelas: só linhas horizontais, estilo artigo --- */
+table {
+  border-collapse: collapse;
+  margin: 1em auto;
+  font-size: 10pt;
+  page-break-inside: avoid;
+}
+th, td {
+  padding: 0.3em 0.8em;
+  text-align: left;
+}
+th {
+  color: var(--cor-texto);
+  border-top: 1.5pt solid var(--cor-texto);
+  border-bottom: 1pt solid var(--cor-texto);
+}
+tr:last-child td {
+  border-bottom: 1.5pt solid var(--cor-texto);
+}
+
+/* --- Figuras --- */
+img {
+  display: block;
+  margin: 1em auto;
+  max-width: 100%;
+  height: auto;
+}
+figure {
+  margin: 1em 0;
+  text-align: center;
+  page-break-inside: avoid;
+}
+figcaption {
+  font-size: 10pt;
+  text-indent: 0;
+}
+
+hr {
+  border: none;
+  border-top: 0.5pt solid var(--cor-borda);
+  margin: 1.2em 0;
+}

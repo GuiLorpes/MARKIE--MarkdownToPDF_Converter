@@ -1,0 +1,143 @@
+/* ============================================
+   estilo.css: estilo base para Markdown → PDF
+   ============================================ */
+
+/* --- Página: tamanho, margens e numeração --- */
+@page {
+  size: A4;
+  margin: 1.75cm 2cm;
+
+  /* Número da página no rodapé */
+  @bottom-center {
+    content: counter(page);
+    font-size: 9pt;
+    color: #888;
+  }
+}
+
+/* --- Cores e fontes em um lugar só (fácil de trocar depois) --- */
+:root {
+  --cor-texto: #222;
+  --cor-destaque: #1a5fb4;
+  --cor-fundo-codigo: #f4f4f4;
+  --cor-borda: #ddd;
+  --cor-fundo-suave: #f9f9f9;
+  --cor-texto-suave: #555;
+  --cor-texto-th: #ffffff;
+}
+
+/* --- Texto geral --- */
+body {
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 11pt;
+  line-height: 1.5;
+  color: var(--cor-texto);
+}
+
+p {
+  margin: 0 0 0.8em 0;
+  text-align: justify;
+}
+
+/* --- Títulos --- */
+h1, h2, h3, h4 {
+  font-family: "Helvetica", "Arial", sans-serif;
+  line-height: 1.2;
+  margin: 1.4em 0 0.5em 0;
+  page-break-after: avoid; /* evita título sozinho no fim da página */
+}
+
+h1 {
+  font-size: 22pt;
+  border-bottom: 2px solid var(--cor-destaque);
+  padding-bottom: 0.2em;
+}
+h2 { font-size: 17pt; }
+h3 { font-size: 14pt; }
+h4 { font-size: 12pt; }
+
+/* --- Links --- */
+a {
+  color: var(--cor-destaque);
+  text-decoration: none;
+}
+
+/* --- Listas --- */
+ul, ol {
+  margin: 0 0 0.8em 0;
+  padding-left: 1.5em;
+}
+li {
+  margin-bottom: 0.25em;
+}
+
+/* --- Citações (> texto) --- */
+blockquote {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border-left: 4px solid var(--cor-destaque);
+  background: var(--cor-fundo-suave);
+  color: var(--cor-texto-suave);
+  font-style: italic;
+}
+
+/* --- Código inline: `assim` --- */
+code {
+  font-family: "Courier New", "DejaVu Sans Mono", monospace;
+  font-size: 9.5pt;
+  background: var(--cor-fundo-codigo);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+
+/* --- Blocos de código: ```assim``` --- */
+pre {
+  background: var(--cor-fundo-codigo);
+  border: 1px solid var(--cor-borda);
+  border-radius: 4px;
+  padding: 0.8em;
+  margin: 1em 0;
+  white-space: pre-wrap;       /* quebra linhas longas em vez de cortar */
+  word-wrap: break-word;
+  page-break-inside: avoid;    /* tenta manter o bloco inteiro na mesma página */
+}
+
+/* O code dentro do pre não precisa do fundo duplicado */
+pre code {
+  background: none;
+  padding: 0;
+}
+
+/* --- Tabelas --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 10pt;
+  page-break-inside: avoid;
+}
+th, td {
+  border: 1px solid var(--cor-borda);
+  padding: 0.4em 0.6em;
+  text-align: left;
+}
+th {
+  background: var(--cor-destaque);
+  color: var(--cor-texto-th);
+}
+tr:nth-child(even) td {
+  background: var(--cor-fundo-suave);     /* listras alternadas */
+}
+
+/* --- Imagens --- */
+img {
+  max-width: 100%;         /* nunca ultrapassa a largura da página */
+  height: auto;
+}
+
+/* --- Linha horizontal (---) --- */
+hr {
+  border: none;
+  border-top: 1px solid var(--cor-borda);
+  margin: 1.5em 0;
+}
