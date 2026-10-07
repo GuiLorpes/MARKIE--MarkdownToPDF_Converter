@@ -13,7 +13,26 @@ STYLES: dict[str, str] = {"base":"base.css", "sbc":"article_sbc.css"}
 DARK_STYLE: str = "dark.css"
 
 md = MarkdownIt().enable("table")
-error: str
+
+def get_CSS(style: str, dark: bool) -> list[CSS]:
+    '''
+    
+    '''
+    if style not in STYLES:
+        raise StyleError(
+            f"Error: unknown style '{style}'. Options: {', '.join(STYLES)}"
+        )
+    
+    path = PATH_STYLES / STYLES[style]
+    if not path.is_file():
+        raise StyleError(f"Error: style file not found: {path}")
+
+    css = [CSS(filename=f'{PATH_STYLES}/{STYLES[style]}')]
+
+    if dark:
+        css.append(CSS(filename=f'{PATH_STYLES}/{DARK_STYLE}'))
+        
+    return css
 
 
 def converter(file: str, style: str, dark: bool, out: str) -> None:
@@ -44,19 +63,7 @@ def converter(file: str, style: str, dark: bool, out: str) -> None:
     body = md.render(content)
     out = out or str(Path(file).with_suffix(".pdf"))
 
-    if style not in STYLES:
-        raise StyleError(
-            f"Error: unknown style '{style}'. Options: {', '.join(STYLES)}"
-        )
-
-    path = PATH_STYLES / STYLES[style]
-    if not path.is_file():
-        raise StyleError(f"Error: style file not found: {path}")
-
-    css = [CSS(filename=f'{PATH_STYLES}/{STYLES[style]}')]
-    
-    if dark:
-        css.append(CSS(filename=f'{PATH_STYLES}/{DARK_STYLE}'))
+    css = get_CSS(style, dark)
 
     HTML(string=f''' {body} ''').write_pdf(out, stylesheets=css)
     
@@ -65,7 +72,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", type=str)
     parser.add_argument("--style", "-s", type=str, default="base")
-    parser.add_argument("--theme", "-t", action="store_true")
+    parser.add_argument("--dark", "-d", action="store_true")
     parser.add_argument("-o", type=str, default="")
     args = parser.parse_args()
 
@@ -75,7 +82,7 @@ def main():
         if not args.file.endswith(".md"):
             raise NotMarkdownError()
 
-        converter(args.file, args.style ,args.theme, args.o)    
+        converter(args.file, args.style ,args.dark, args.o)    
 
     except MdToPdfExceptions as e:
         print(f"Error: {e}", file=sys.stderr)
