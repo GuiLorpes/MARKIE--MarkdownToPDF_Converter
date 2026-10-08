@@ -1,0 +1,27 @@
+/* --- Sumário --- */
+.toc {
+  page-break-after: always;        /* o corpo começa na página seguinte */
+}
+.toc-title {
+  font-family: "Helvetica", "Arial", sans-serif;
+  font-size: 20pt;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+.toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.toc li {
+  margin-bottom: 0.3em;
+}
+.toc li.level-2 { padding-left: 1.2em; }
+.toc li.level-3 { padding-left: 2.4em; }
+.toc a {
+  color: var(--cor-texto);
+}
+/* pontinhos + número da página onde o título está */
+.toc a::after {
+  content: leader('.') target-counter(attr(href), page);
+}

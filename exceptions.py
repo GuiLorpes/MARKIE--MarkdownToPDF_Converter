@@ -1,11 +1,3 @@
-exceptions: list[str] = [
-"Usage: python md_to_pdf.py --file FILE  --style STYLE --theme -o OUT.pdf",
-"FILE has a different extension. FILE has to be .md",
-"FILE was not found",
-"FILE doesn't have contents to convert to PDF"
-]
-
-
 class MdToPdfExceptions(Exception):
     ''' 
     Base class for all exceptions raised by this project
@@ -21,7 +13,7 @@ class MdToPdfExceptions(Exception):
 class NoFileError(MdToPdfExceptions):
     '''Raised when no file is passed as argument'''
     default_message = (
-        "Usage: python md_to_pdf.py --file FILE --style STYLE --theme -o OUT.pdf"
+        "Usage: python md_to_pdf.py --file [-f] FILE --toc --style [-s] STYLE --dark [-s] -o OUT.pdf"
     )
 
 
