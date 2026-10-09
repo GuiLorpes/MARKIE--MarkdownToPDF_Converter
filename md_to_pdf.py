@@ -15,11 +15,16 @@ from pygments.util import ClassNotFound
 
 
 CURR_DIR: Path = Path(__file__).resolve().parent
+
+# CSS
 PATH_STYLES: Path =  CURR_DIR / "styles"
 STYLES: dict[str, str] = {"base":"base.css", "sbc":"article_sbc.css"}
 DARK_STYLE: str = "dark.css"
 TOC_STYLE: str = "toc.css"
 
+# Languages
+LANGS: dict[str, str] = {"pt-BR":"Conteúdos" , "en-US":"Contents", 
+                         "fr" : "Contenus", "es" : "Contenidos"}
 
 def make_markdown(dark: bool) -> MarkdownIt:
     formatter = HtmlFormatter(
@@ -60,7 +65,13 @@ def get_CSS(style: str, dark: bool, toc: bool) -> list[CSS]:
     return css
 
 
-def converter(file: str, toc: bool, style: str, dark: bool, target: str) -> None: 
+def converter(file: str, 
+              lang: str,
+              toc: bool, 
+              style: str, 
+              dark: bool, 
+              target: str
+              ) -> None: 
     '''
     Converts `file` into HTML, then into PDF
 
@@ -72,6 +83,11 @@ def converter(file: str, toc: bool, style: str, dark: bool, target: str) -> None
     
     :param file: .md file to be converted    
     :type file: str
+
+    :param lang: Decides what language the HTML will be formated
+    :type lang: str
+
+    :param toc: If `True` the PDF will have a table of contents
     
     :param style: Style that the PDF file is going to be formated into
     :type style: str
@@ -99,7 +115,7 @@ def converter(file: str, toc: bool, style: str, dark: bool, target: str) -> None
     md = make_markdown(dark)
 
     if toc:
-        body, toc_html = render_with_toc(md, content)
+        body, toc_html = render_with_toc(md, content, lang)
         body = toc_html + body
 
     else:
@@ -109,13 +125,15 @@ def converter(file: str, toc: bool, style: str, dark: bool, target: str) -> None
 
     css = get_CSS(style, dark, toc)
 
-    HTML(string=f''' {body} ''', base_url=str(Path(file).resolve().parent)).\
-        write_pdf(out, stylesheets=css)
+    HTML(string=f'<html lang="{lang}"><body>{body}</body></html>', \
+         base_url=str(Path(file).resolve().parent)). \
+            write_pdf(out, stylesheets=css)
     
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", "-f", type=str)
+    parser.add_argument("--lang", "-l", type=str, default="en-US", choices=LANGS)
     parser.add_argument("--toc", action="store_true")
     parser.add_argument("--style", "-s", type=str, default="base", choices=STYLES)
     parser.add_argument("--dark", "-d", action="store_true")
@@ -128,7 +146,7 @@ def main():
         if not args.file.endswith(".md"):
             raise NotMarkdownError()
 
-        converter(args.file, args.toc, args.style ,args.dark, args.o)    
+        converter(args.file, args.lang, args.toc, args.style ,args.dark, args.o)    
 
     except MdToPdfExceptions as e:
         print(f"{e}", file=sys.stderr)

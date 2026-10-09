@@ -1,11 +1,12 @@
-from dataclasses import dataclass
-
 import re
 from html import escape
 
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 
+
+LANGS: dict[str, str] = {"pt-BR":"Conteúdos" , "en-US":"Contents", 
+                         "fr" : "Contenus", "es" : "Contenidos"}
 
 def slugify(s: str) -> str:
     '''
@@ -31,6 +32,7 @@ def heading_text(inline: Token) -> str:
 def render_with_toc(
         md: MarkdownIt, 
         content: str, 
+        lang: str,
         max_level: int = 3
     ) -> tuple[str, str]:
     '''  '''
@@ -57,10 +59,10 @@ def render_with_toc(
 
     body = md.renderer.render(tokens, md.options, {})
 
-    return body, build_toc(entries)
+    return body, build_toc(entries, lang)
 
 
-def build_toc(entries: list[tuple[int, str, str]]) -> str:
+def build_toc(entries: list[tuple[int, str, str]], lang: str) -> str:
     '''  '''
     if not entries:
         return ""
@@ -69,4 +71,4 @@ def build_toc(entries: list[tuple[int, str, str]]) -> str:
         f'<li class="level-{lvl}"><a href="#{slug}">{escape(text)}</a></li>'
         for lvl, text, slug in entries
     )
-    return f'<nav class="toc"><div class="toc-title">Contents</div><ul>\n{itens}\n</ul></nav>'
+    return f'<nav class="toc"><div class="toc-title">{LANGS[lang]}</div><ul>\n{itens}\n</ul></nav>'
