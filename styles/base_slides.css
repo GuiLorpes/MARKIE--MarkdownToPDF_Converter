@@ -1,0 +1,51 @@
+/* slides.css: uma "página" 16:9 por slide */
+
+@page {
+  size: 1280px 720px;       /* proporção 16:9 */
+  margin: 0;
+}
+
+:root {
+  --cor-texto: #1f2328;
+  --cor-destaque: #1a5fb4;
+  --cor-fundo-codigo: #f4f4f4;
+  --cor-borda: #ddd;
+  --cor-fundo-suave: #f9f9f9;
+  --cor-texto-suave: #555;
+  --cor-texto-th: #ffffff;
+}
+
+body {
+  font-family: "Helvetica", "Arial", sans-serif;
+  font-size: 28px;
+  line-height: 1.4;
+  color: var(--cor-texto);
+}
+
+.slide {
+  box-sizing: border-box;
+  padding: 60px 90px;
+  page-break-after: always;       /* um slide por página */
+}
+.slide:last-child {
+  page-break-after: auto;         /* evita uma página em branco no final */
+}
+
+h1 { font-size: 56px; margin: 0 0 0.4em 0; color: var(--cor-destaque); }
+h2 { font-size: 44px; margin: 0 0 0.5em 0; }
+h3 { font-size: 34px; }
+
+ul, ol { padding-left: 1.2em; }
+li { margin-bottom: 0.4em; }
+
+code { font-size: 24px; }
+pre {
+  background: var(--cor-fundo-codigo);
+  padding: 20px;
+  border-radius: 8px;
+  font-size: 22px;
+  white-space: pre-wrap;
+}
+
+img { max-width: 100%; max-height: 420px; }
+a { color: var(--cor-destaque); text-decoration: none; }

@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from exceptions import *
-from render import render_with_toc
+from render import render_with_toc, render_slides, LANGS
 
 from markdown_it import MarkdownIt
 from weasyprint import HTML, CSS             # type: ignore
@@ -21,10 +21,8 @@ PATH_STYLES: Path =  CURR_DIR / "styles"
 STYLES: dict[str, str] = {"base":"base.css", "sbc":"article_sbc.css"}
 DARK_STYLE: str = "dark.css"
 TOC_STYLE: str = "toc.css"
+SLIDES_STYLES: dict[str, str] = {"base" : "base_slides.css"}
 
-# Languages
-LANGS: dict[str, str] = {"pt-BR":"Conteúdos" , "en-US":"Contents", 
-                         "fr" : "Contenus", "es" : "Contenidos"}
 
 def make_markdown(dark: bool) -> MarkdownIt:
     formatter = HtmlFormatter(
@@ -37,13 +35,21 @@ def make_markdown(dark: bool) -> MarkdownIt:
         try:
             lexer = get_lexer_by_name(lang)
         except ClassNotFound:
-            return ""                # linguagem desconhecida/ausente: sem destaque
+            return ""                # unknown/missing language: no contrast
         return highlight(code, lexer, formatter)
 
     return MarkdownIt("commonmark", {"highlight": highlight_code}).enable("table")
 
 
-def get_CSS(style: str, dark: bool, toc: bool) -> list[CSS]:
+def load_CSS(path: Path) -> CSS:
+    '''  '''
+    if not path.is_file():
+        raise StyleError(f"Error: style file not found: {path}")
+
+    return CSS(filename=str(path))
+    
+
+def get_CSS(style: str, slide: bool, dark: bool, toc: bool, extras: list[str]) -> list[CSS]:
     '''
     Search for `style` in `STYLES`, if it exists, get it's path for the CSS
 
@@ -51,25 +57,42 @@ def get_CSS(style: str, dark: bool, toc: bool) -> list[CSS]:
 
     If `toc`is True adds it into the CSS list
     '''
-    path = PATH_STYLES / STYLES[style]
-    if not path.is_file():
-        raise StyleError(f"Error: style file not found: {path}")
+    paths: list[Path] = []
 
-    css = [CSS(filename=f'{PATH_STYLES}/{STYLES[style]}')]
+    if not slide:
+        if style not in STYLES:
+            raise StyleError(\
+                f"Error: Unknown style '{style}'. Options: {', '.join(STYLES)}")
+        paths.append(PATH_STYLES / STYLES[style])
+
+        if toc:
+            paths.append(PATH_STYLES / TOC_STYLE)
+
+    # Slides styles
+    else:
+        if style not in SLIDES_STYLES:
+            raise StyleError(\
+                f"Error: Unknown style '{style}'. Options: {', '.join(SLIDES_STYLES)}")
+        
+        paths.append(PATH_STYLES / SLIDES_STYLES[style])
 
     if dark:
-        css.append(CSS(filename=f'{PATH_STYLES}/{DARK_STYLE}'))
+        # Dark theme can be applied on both
+        paths.append(PATH_STYLES / DARK_STYLE)
 
-    if toc:
-        css.append(CSS(filename=f'{PATH_STYLES}/{TOC_STYLE}'))
-    return css
+    for e in extras:
+        paths.append(Path(e))
+    
+    return [load_CSS(path) for path in paths]
 
 
 def converter(file: str, 
               lang: str,
+              slides: bool,
               toc: bool, 
               style: str, 
-              dark: bool, 
+              dark: bool,
+              extras: list[str], 
               target: str
               ) -> None: 
     '''
@@ -114,16 +137,19 @@ def converter(file: str,
 
     md = make_markdown(dark)
 
-    if toc:
-        body, toc_html = render_with_toc(md, content, lang)
-        body = toc_html + body
-
+    if slides:
+        body = render_slides(md,  content)
     else:
-        body = md.render(content)    
+        if toc:
+            body, toc_html = render_with_toc(md, content, lang)
+            body = toc_html + body
+
+        else:
+            body = md.render(content)    
     
     out = target or str(Path(file).with_suffix(".pdf"))
 
-    css = get_CSS(style, dark, toc)
+    css = get_CSS(style, slides, dark, toc, extras)
 
     HTML(string=f'<html lang="{lang}"><body>{body}</body></html>', \
          base_url=str(Path(file).resolve().parent)). \
@@ -134,9 +160,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", "-f", type=str)
     parser.add_argument("--lang", "-l", type=str, default="en-US", choices=LANGS)
+    parser.add_argument("--slides", action="store_true")
     parser.add_argument("--toc", action="store_true")
     parser.add_argument("--style", "-s", type=str, default="base", choices=STYLES)
     parser.add_argument("--dark", "-d", action="store_true")
+    parser.add_argument("--css", "-c", action="append", default=[], metavar="FILE")
     parser.add_argument("-o", type=str, default="")
     args = parser.parse_args()
 
@@ -145,8 +173,10 @@ def main():
             raise NoFileError()
         if not args.file.endswith(".md"):
             raise NotMarkdownError()
+        if args.slides and args.toc:
+            raise OptionConflictError("--slides and --toc can't be used together")
 
-        converter(args.file, args.lang, args.toc, args.style ,args.dark, args.o)    
+        converter(args.file, args.lang, args.slides, args.toc, args.style ,args.dark, args.css, args.o)    
 
     except MdToPdfExceptions as e:
         print(f"{e}", file=sys.stderr)

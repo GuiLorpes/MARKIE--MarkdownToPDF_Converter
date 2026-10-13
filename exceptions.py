@@ -35,3 +35,7 @@ class EmptyFileError(MdToPdfExceptions):
 class StyleError(MdToPdfExceptions):
     '''Raised when the chosen style (or its .css file) can't be used'''
     default_message = "Invalid style"
+
+class OptionConflictError(MdToPdfExceptions):
+    '''Raised when two options can't be used together'''
+    default_message = "These options can't be used together"
