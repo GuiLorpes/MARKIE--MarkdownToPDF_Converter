@@ -21,7 +21,7 @@ PATH_STYLES: Path =  CURR_DIR / "styles"
 STYLES: dict[str, str] = {"base":"base.css", "sbc":"article_sbc.css"}
 DARK_STYLE: str = "dark.css"
 TOC_STYLE: str = "toc.css"
-SLIDES_STYLES: dict[str, str] = {"base" : "base_slides.css"}
+SLIDES_STYLES: dict[str, str] = {"base":"base_slides.css"}
 
 
 def make_markdown(dark: bool) -> MarkdownIt:
@@ -42,9 +42,9 @@ def make_markdown(dark: bool) -> MarkdownIt:
 
 
 def load_CSS(path: Path) -> CSS:
-    '''  '''
+    ''' Retrieves the CSS file from `path`, if the file doesn't exists raiszes an error '''
     if not path.is_file():
-        raise StyleError(f"Error: style file not found: {path}")
+        raise StyleError(f"Style file not found: {path}")
 
     return CSS(filename=str(path))
     
@@ -62,8 +62,11 @@ def get_CSS(style: str, slide: bool, dark: bool, toc: bool, extras: list[str]) -
     if not slide:
         if style not in STYLES:
             raise StyleError(\
-                f"Error: Unknown style '{style}'. Options: {', '.join(STYLES)}")
+                f"Unknown style '{style}'. Options: {', '.join(STYLES)}")
         paths.append(PATH_STYLES / STYLES[style])
+
+        
+
 
         if toc:
             paths.append(PATH_STYLES / TOC_STYLE)
@@ -72,7 +75,7 @@ def get_CSS(style: str, slide: bool, dark: bool, toc: bool, extras: list[str]) -
     else:
         if style not in SLIDES_STYLES:
             raise StyleError(\
-                f"Error: Unknown style '{style}'. Options: {', '.join(SLIDES_STYLES)}")
+                f"Unknown style '{style}'. Options: {', '.join(SLIDES_STYLES)}")
         
         paths.append(PATH_STYLES / SLIDES_STYLES[style])
 
@@ -110,14 +113,21 @@ def converter(file: str,
     :param lang: Decides what language the HTML will be formated
     :type lang: str
 
+    :param slides: If `True` the PDF will have a slide format
+    :type slides: bool
+
     :param toc: If `True` the PDF will have a table of contents
-    
+    :type toc: bool
+
     :param style: Style that the PDF file is going to be formated into
     :type style: str
 
     :param dark: Dictates if the PDF has a light or dark theme 
     (False or True, respectively)
     :type dark: bool
+
+    :param extras: List of extra CSS files to edit the original `style`
+    :type extras: list[str]
 
     :param target: Filename where the PDF is going to be written
     :type out: str
@@ -127,7 +137,7 @@ def converter(file: str,
     :rtype: None
     '''
     try:
-        with open(file, 'r') as f:
+        with open(file, 'r', encoding="utf-8") as f:
             content = f.read()
     except FileNotFoundError as e:
         raise InputNotFoundError(f"FILE was not found: {file}") from e
@@ -138,7 +148,7 @@ def converter(file: str,
     md = make_markdown(dark)
 
     if slides:
-        body = render_slides(md,  content)
+        body = render_slides(md, content)
     else:
         if toc:
             body, toc_html = render_with_toc(md, content, lang)
@@ -159,7 +169,7 @@ def converter(file: str,
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", "-f", type=str)
-    parser.add_argument("--lang", "-l", type=str, default="en-US", choices=LANGS)
+    parser.add_argument("--lang", "-l", type=str, default="pt-BR", choices=LANGS)
     parser.add_argument("--slides", action="store_true")
     parser.add_argument("--toc", action="store_true")
     parser.add_argument("--style", "-s", type=str, default="base", choices=STYLES)
@@ -179,7 +189,7 @@ def main():
         converter(args.file, args.lang, args.slides, args.toc, args.style ,args.dark, args.css, args.o)    
 
     except MdToPdfExceptions as e:
-        print(f"{e}", file=sys.stderr)
+        print(f'{e}', file=sys.stderr)
         sys.exit(1)
 
 

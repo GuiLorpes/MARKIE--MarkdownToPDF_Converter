@@ -35,7 +35,6 @@ def render_with_toc(
         lang: str,
         max_level: int = 3
     ) -> tuple[str, str]:
-    '''  '''
     tokens = md.parse(content)
     entries: list[tuple[int, str, str]] = []
     used: dict[str, int] = {}
@@ -62,7 +61,6 @@ def render_with_toc(
     return body, build_toc(entries, lang)
 
 def build_toc(entries: list[tuple[int, str, str]], lang: str) -> str:
-    '''  '''
     if not entries:
         return ""
 
