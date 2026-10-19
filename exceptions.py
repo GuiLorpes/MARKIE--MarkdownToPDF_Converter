@@ -13,7 +13,14 @@ class MdToPdfExceptions(Exception):
 class NoFileError(MdToPdfExceptions):
     '''Raised when no file is passed as argument'''
     default_message = (
-        "Usage: python md_to_pdf.py --file [-f] FILE --toc --style [-s] STYLE --dark [-s] -o OUT.pdf"
+        "Usage: \n"
+        "python md_to_pdf.py --file [-f] FILE \n"
+        "    --slides\n"
+        "    --toc\n"
+        "    --style [-s] STYLE\n"
+        "    --dark [-d]\n"
+        "    --css EXTRA_STYLES\n"
+        "    -o OUT.pdf\n"
     )
 
 

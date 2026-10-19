@@ -1,12 +1,12 @@
 import re
-from html import escape
 
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
+from html import escape
 
+from exceptions import *
+from config import *
 
-LANGS: dict[str, str] = {"pt-BR":"Conteúdos" , "en-US":"Contents", 
-                         "fr" : "Contenus", "es" : "Contenidos"}
 
 # Table of Contents
 

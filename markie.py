@@ -3,7 +3,6 @@ import sys
 from pathlib import Path
 
 from exceptions import *
-from render import render_with_toc, render_slides, LANGS
 
 from markdown_it import MarkdownIt
 from weasyprint import HTML, CSS             # type: ignore
@@ -13,15 +12,23 @@ from pygments.formatters import HtmlFormatter
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 
+from config import LANGS, STYLES, SLIDES_STYLES
+from entities import Render, RenderSlides, RenderWithTOC, \
+                        ListCSS, SlidesCSS, TocCSS
 
-CURR_DIR: Path = Path(__file__).resolve().parent
 
-# CSS
-PATH_STYLES: Path =  CURR_DIR / "styles"
-STYLES: dict[str, str] = {"base":"base.css", "sbc":"article_sbc.css"}
-DARK_STYLE: str = "dark.css"
-TOC_STYLE: str = "toc.css"
-SLIDES_STYLES: dict[str, str] = {"base":"base_slides.css"}
+MODES: dict[str, tuple[type[Render], type[ListCSS]]] = {
+    "normal" : (Render, ListCSS),
+    "slides" : (RenderSlides, SlidesCSS),
+    "toc" : (RenderWithTOC, TocCSS)
+}
+
+def get_mode(slides:bool, toc: bool) -> str:
+    if slides:
+        return "slides"
+    if toc:
+        return "toc"
+    return "normal"
 
 
 def make_markdown(dark: bool) -> MarkdownIt:
@@ -47,46 +54,6 @@ def load_CSS(path: Path) -> CSS:
         raise StyleError(f"Style file not found: {path}")
 
     return CSS(filename=str(path))
-    
-
-def get_CSS(style: str, slide: bool, dark: bool, toc: bool, extras: list[str]) -> list[CSS]:
-    '''
-    Search for `style` in `STYLES`, if it exists, get it's path for the CSS
-
-    If `dark` is True, adds it into the CSS list
-
-    If `toc`is True adds it into the CSS list
-    '''
-    paths: list[Path] = []
-
-    if not slide:
-        if style not in STYLES:
-            raise StyleError(\
-                f"Unknown style '{style}'. Options: {', '.join(STYLES)}")
-        paths.append(PATH_STYLES / STYLES[style])
-
-        
-
-
-        if toc:
-            paths.append(PATH_STYLES / TOC_STYLE)
-
-    # Slides styles
-    else:
-        if style not in SLIDES_STYLES:
-            raise StyleError(\
-                f"Unknown style '{style}'. Options: {', '.join(SLIDES_STYLES)}")
-        
-        paths.append(PATH_STYLES / SLIDES_STYLES[style])
-
-    if dark:
-        # Dark theme can be applied on both
-        paths.append(PATH_STYLES / DARK_STYLE)
-
-    for e in extras:
-        paths.append(Path(e))
-    
-    return [load_CSS(path) for path in paths]
 
 
 def converter(file: str, 
@@ -147,19 +114,12 @@ def converter(file: str,
 
     md = make_markdown(dark)
 
-    if slides:
-        body = render_slides(md, content)
-    else:
-        if toc:
-            body, toc_html = render_with_toc(md, content, lang)
-            body = toc_html + body
+    render_class, css_class = MODES[get_mode(slides, toc)]
 
-        else:
-            body = md.render(content)    
+    body = render_class(md, content, lang).rendering()
+    css = [load_CSS(c) for c in css_class(dark, extras).get_styles(style)]
     
     out = target or str(Path(file).with_suffix(".pdf"))
-
-    css = get_CSS(style, slides, dark, toc, extras)
 
     HTML(string=f'<html lang="{lang}"><body>{body}</body></html>', \
          base_url=str(Path(file).resolve().parent)). \
@@ -191,6 +151,7 @@ def main():
     except MdToPdfExceptions as e:
         print(f'{e}', file=sys.stderr)
         sys.exit(1)
+
 
 
 if __name__ == "__main__":
